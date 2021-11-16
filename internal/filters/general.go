@@ -1,6 +1,7 @@
 package filters
 
 import (
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
 	"github.com/davidbyttow/govips/v2/vips"
 )
 
@@ -12,7 +13,7 @@ const (
 	center      = "center"
 )
 
-func Watermark(image *vips.ImageRef, conf map[string]interface{}) error {
+func Watermark(image *models.Image, conf map[string]interface{}) error {
 	watermark, err := vips.NewImageFromFile(conf["image"].(string))
 	if err != nil {
 		return err
@@ -35,21 +36,21 @@ func Watermark(image *vips.ImageRef, conf map[string]interface{}) error {
 		x, y = padding, padding
 	case bottomLeft:
 		x = padding
-		y = image.Height() - watermark.Height() - padding
+		y = image.Image.Height() - watermark.Height() - padding
 	case topRight:
-		x = image.Width() - watermark.Width() - padding
+		x = image.Image.Width() - watermark.Width() - padding
 		y = padding
 	case bottomRight:
-		x = image.Width() - watermark.Width() - padding
-		y = image.Height() - watermark.Height() - padding
+		x = image.Image.Width() - watermark.Width() - padding
+		y = image.Image.Height() - watermark.Height() - padding
 	case center:
-		x = image.Width()/2 - watermark.Width()/2
-		y = image.Height()/2 - watermark.Height()/2
+		x = image.Image.Width()/2 - watermark.Width()/2
+		y = image.Image.Height()/2 - watermark.Height()/2
 	}
 
-	return image.Composite(watermark, vips.BlendModeAtop, x, y)
+	return image.Image.Composite(watermark, vips.BlendModeAtop, x, y)
 }
 
-func Strip(image *vips.ImageRef, conf map[string]interface{}) error {
-	return image.RemoveMetadata()
+func Strip(image *models.Image, conf map[string]interface{}) error {
+	return image.Image.RemoveMetadata()
 }

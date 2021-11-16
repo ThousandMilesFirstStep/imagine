@@ -1,8 +1,11 @@
 package filters
 
-import "github.com/davidbyttow/govips/v2/vips"
+import (
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
+	"github.com/davidbyttow/govips/v2/vips"
+)
 
-func Thumbnail(image *vips.ImageRef, conf map[string]interface{}) error {
+func Thumbnail(image *models.Image, conf map[string]interface{}) error {
 	width := int(conf["width"].(int64))
 	height := int(conf["height"].(int64))
 
@@ -11,5 +14,5 @@ func Thumbnail(image *vips.ImageRef, conf map[string]interface{}) error {
 		crop = vips.InterestingNone
 	}
 
-	return image.Thumbnail(width, height, crop)
+	return image.Image.Thumbnail(width, height, crop)
 }

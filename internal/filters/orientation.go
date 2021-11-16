@@ -1,7 +1,9 @@
 package filters
 
-import "github.com/davidbyttow/govips/v2/vips"
+import (
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
+)
 
-func Autorotate(image *vips.ImageRef, conf map[string]interface{}) error {
-	return image.AutoRotate()
+func Autorotate(image *models.Image, conf map[string]interface{}) error {
+	return image.Image.AutoRotate()
 }

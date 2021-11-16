@@ -2,10 +2,10 @@ package internal
 
 import (
 	"github.com/ThousandMilesFirstStep/imagine/internal/filters"
-	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
 )
 
-type Filter func(image *vips.ImageRef, conf map[string]interface{}) error
+type Filter func(image *models.Image, conf map[string]interface{}) error
 
 var filtersStore map[string]Filter
 
@@ -15,6 +15,7 @@ func init() {
 		"autorotate": filters.Autorotate,
 		"strip":      filters.Strip,
 		"watermark":  filters.Watermark,
+		"export":     filters.Export,
 	}
 }
 

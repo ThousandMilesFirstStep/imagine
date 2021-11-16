@@ -8,6 +8,7 @@ import (
 	"github.com/davidbyttow/govips/v2/vips"
 
 	"github.com/ThousandMilesFirstStep/imagine/internal"
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
 )
 
 var config *internal.Config
@@ -50,7 +51,7 @@ func ProcessFile(path string, filter string) ([]byte, error) {
 		return nil, err
 	}
 
-	return internal.Process(image, filter, config)
+	return process(image, filter, config)
 }
 
 func ProcessReader(r io.Reader, filter string) ([]byte, error) {
@@ -59,7 +60,7 @@ func ProcessReader(r io.Reader, filter string) ([]byte, error) {
 		return nil, err
 	}
 
-	return internal.Process(image, filter, config)
+	return process(image, filter, config)
 }
 
 func ProcessBuffer(buffer []byte, filter string) ([]byte, error) {
@@ -68,5 +69,11 @@ func ProcessBuffer(buffer []byte, filter string) ([]byte, error) {
 		return nil, err
 	}
 
-	return internal.Process(image, filter, config)
+	return process(image, filter, config)
+}
+
+func process(image *vips.ImageRef, filter string, config *internal.Config) ([]byte, error) {
+	img := models.NewImage(image)
+
+	return internal.Process(img, filter, config)
 }

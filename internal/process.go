@@ -3,12 +3,13 @@ package internal
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	"github.com/davidbyttow/govips/v2/vips"
+
+	"github.com/ThousandMilesFirstStep/imagine/internal/models"
 )
 
-type VipsConfig struct {
+type ConfigVips struct {
 	Concurrency  int
 	CollectStats bool
 	CacheTrace   bool
@@ -25,43 +26,56 @@ type ConfigFilters map[string][]ConfigFilter
 type Config struct {
 	Quality int
 	Filters ConfigFilters
-	Vips    VipsConfig
+	Vips    ConfigVips
 }
 
-func Process(image *vips.ImageRef, filter string, config *Config) ([]byte, error) {
-	defer image.Close()
+func Process(image *models.Image, filter string, config *Config) ([]byte, error) {
+	defer image.Image.Close()
+
+	if config.Quality > 0 {
+		image.Export.Quality = config.Quality
+	}
 
 	filterSteps := config.Filters[filter]
 
 	for _, filterStep := range filterSteps {
-		fmt.Println(filterStep.Filter, filterStep.Options)
-
-		if getFilter(filterStep.Filter) == nil {
+		filterFunc := getFilter(filterStep.Filter)
+		if filterFunc == nil {
 			return nil, fmt.Errorf("the filter \"%s\" does not exist", filterStep.Filter)
 		}
 
-		err := getFilter(filterStep.Filter)(image, filterStep.Options)
+		err := filterFunc(image, filterStep.Options)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	ext := strings.TrimLeft(image.Format().FileExt(), ".")
-
 	var bytes []byte
 	var err error
-	switch ext {
+	switch image.Export.Format {
 	case "jpeg":
-	case "jpg":
-		bytes, _, err = image.ExportJpeg(&vips.JpegExportParams{
-			Quality:        config.Quality,
-			Interlace:      true,
+		if image.Image.HasAlpha() {
+			image.Image.Flatten(&vips.Color{R: 255, G: 255, B: 255})
+		}
+
+		bytes, _, err = image.Image.ExportJpeg(&vips.JpegExportParams{
+			Quality:        image.Export.Quality,
+			Interlace:      image.Export.Interlace,
 			OptimizeCoding: true,
+			StripMetadata:  image.Export.Strip,
 		})
 	case "png":
-		bytes, _, err = image.ExportPng(&vips.PngExportParams{
-			Compression: qualityToCompression(config.Quality),
-			Interlace:   false,
+		bytes, _, err = image.Image.ExportPng(&vips.PngExportParams{
+			Compression:   pngCompressionFromQuality(image.Export.Quality),
+			Interlace:     image.Export.Interlace,
+			StripMetadata: image.Export.Strip,
+		})
+	case "webp":
+		bytes, _, err = image.Image.ExportWebp(&vips.WebpExportParams{
+			Quality:         image.Export.Quality,
+			Lossless:        image.Export.Lossless,
+			ReductionEffort: image.Export.Effort,
+			StripMetadata:   image.Export.Strip,
 		})
 	}
 
@@ -72,6 +86,6 @@ func Process(image *vips.ImageRef, filter string, config *Config) ([]byte, error
 	return bytes, nil
 }
 
-func qualityToCompression(quality int) int {
+func pngCompressionFromQuality(quality int) int {
 	return int(math.Max(0, math.Ceil(9-float64(quality)*0.1)))
 }
