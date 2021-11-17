@@ -81,23 +81,7 @@ func (vi *vipsImage) Watermark(image string, position domain.Position, padding i
 	}
 	defer watermark.Close()
 
-	var x, y int
-	switch position {
-	case domain.TopLeft:
-		x, y = padding, padding
-	case domain.BottomLeft:
-		x = padding
-		y = vi.image.Height() - watermark.Height() - padding
-	case domain.TopRight:
-		x = vi.image.Width() - watermark.Width() - padding
-		y = padding
-	case domain.BottomRight:
-		x = vi.image.Width() - watermark.Width() - padding
-		y = vi.image.Height() - watermark.Height() - padding
-	case domain.Center:
-		x = vi.image.Width()/2 - watermark.Width()/2
-		y = vi.image.Height()/2 - watermark.Height()/2
-	}
+	x, y := domain.GetCoordinatesFromPosition(vi.image.Width(), vi.image.Height(), watermark.Width(), watermark.Height(), position, padding)
 
 	return vi.image.Composite(watermark, vips.BlendModeAtop, x, y)
 }
