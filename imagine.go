@@ -5,20 +5,19 @@ import (
 	"io"
 
 	"github.com/BurntSushi/toml"
+	"github.com/ThousandMilesFirstStep/imagine/internal/adapters"
+	"github.com/ThousandMilesFirstStep/imagine/internal/domain"
 	"github.com/davidbyttow/govips/v2/vips"
-
-	"github.com/ThousandMilesFirstStep/imagine/internal"
-	"github.com/ThousandMilesFirstStep/imagine/internal/models"
 )
 
-var config *internal.Config
+var config *domain.Config
 
 func Init(configFile string) error {
 	if configFile == "" {
 		return errors.New("no config file provided")
 	}
 
-	config = &internal.Config{}
+	config = &domain.Config{}
 
 	_, err := toml.DecodeFile(configFile, config)
 	if err != nil {
@@ -41,8 +40,8 @@ func Shutdown() {
 	vips.Shutdown()
 }
 
-func RegisterFilter(name string, filter internal.Filter) {
-	internal.RegisterFilter(name, filter)
+func RegisterFilter(name string, filter domain.Filter) {
+	domain.RegisterFilter(name, filter)
 }
 
 func ProcessFile(path string, filter string) ([]byte, error) {
@@ -72,8 +71,8 @@ func ProcessBuffer(buffer []byte, filter string) ([]byte, error) {
 	return process(image, filter, config)
 }
 
-func process(image *vips.ImageRef, filter string, config *internal.Config) ([]byte, error) {
-	img := models.NewImage(image)
+func process(image *vips.ImageRef, filter string, config *domain.Config) ([]byte, error) {
+	img := adapters.NewVipsImage(image)
 
-	return internal.Process(img, filter, config)
+	return domain.Process(img, filter, config)
 }
