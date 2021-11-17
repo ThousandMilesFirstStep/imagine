@@ -1,11 +1,5 @@
 package domain
 
-import (
-	"errors"
-	"regexp"
-	"strconv"
-)
-
 func setExportOptions(image Image, conf map[string]interface{}) error {
 	exportOptions := &ExportOptions{}
 
@@ -75,20 +69,12 @@ func thumbnail(image Image, conf map[string]interface{}) error {
 }
 
 func flatten(image Image, conf map[string]interface{}) error {
-	color := conf["backgroundColor"].(string)
+	configColor := conf["backgroundColor"].(string)
 
-	matched, err := regexp.MatchString("^#[0-9a-fA-F]{6}$", color)
+	color, err := NewColorFromHex(configColor)
 	if err != nil {
 		return err
 	}
 
-	if !matched {
-		return errors.New("invalid color value")
-	}
-
-	red, _ := strconv.ParseInt(color[1:2], 16, 8)
-	green, _ := strconv.ParseInt(color[3:4], 16, 8)
-	blue, _ := strconv.ParseInt(color[5:6], 16, 8)
-
-	return image.Flatten(Color{R: uint8(red), G: uint8(green), B: uint8(blue)})
+	return image.Flatten(color)
 }
