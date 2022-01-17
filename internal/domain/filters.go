@@ -5,7 +5,7 @@ func setExportOptions(image Image, conf map[string]interface{}) error {
 
 	quality := conf["quality"]
 	if quality != nil {
-		exportOptions.Quality = int(quality.(int64))
+		exportOptions.Quality = getInt(quality)
 	}
 
 	format := conf["format"]
@@ -46,7 +46,7 @@ func watermark(image Image, conf map[string]interface{}) error {
 
 	padding := 0
 	if conf["padding"] != nil {
-		padding = int(conf["padding"].(int64))
+		padding = getInt(conf["padding"])
 	}
 
 	return image.Watermark(conf["image"].(string), position, padding)
@@ -61,8 +61,8 @@ func autorotate(image Image, conf map[string]interface{}) error {
 }
 
 func thumbnail(image Image, conf map[string]interface{}) error {
-	width := int(conf["width"].(int64))
-	height := int(conf["height"].(int64))
+	width := getInt(conf["width"])
+	height := getInt(conf["height"])
 	inset := conf["inset"].(bool)
 
 	return image.Thumbnail(width, height, inset)
@@ -77,4 +77,13 @@ func flatten(image Image, conf map[string]interface{}) error {
 	}
 
 	return image.Flatten(color)
+}
+
+func getInt(value interface{}) int {
+	val, ok := value.(int64)
+	if ok {
+		return int(val)
+	}
+
+	return value.(int)
 }
